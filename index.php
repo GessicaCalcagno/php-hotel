@@ -53,6 +53,41 @@ $hotels = [
 //     echo "Voto: " . $cur_hotel['vote'] . "<br>";
 //     echo "Distanza dal centro: " . $cur_hotel['distance_to_center'] . " km<br><br>";
 // }
+
+$filtered_hotels = $hotels; //questa è la copia dell'array --> è una DEEP COPY o COPY BY VALUE; (shallow copy in JS).
+
+
+//Controlla il valore della chiave solo se c'è la chiave
+if (isset($_GET["parking"]) && $_GET["parking"] === "1") {
+    $tmp_hotels = [];
+    foreach ($filtered_hotels as $hotel) {
+        if ($hotel["parking"]) {
+            $tmp_hotels[] = $hotel;
+        }
+    }
+    $filtered_hotels = $tmp_hotels; //Devo rimancare la copia dell'array
+} else if ($_GET["parking"] === "0") {
+    $tmp_hotels = [];
+    foreach ($filtered_hotels as $hotel) {
+        if ($hotel["parking"] === false) {
+            $tmp_hotels[] = $hotel;
+        }
+    }
+    $filtered_hotels = $tmp_hotels;
+};
+
+if (isset($_GET["vote"])) {
+    $selected_vote = intval($_GET["vote"]);
+    $tmp_hotels = []; // Array di appoggio per salvare i valori temporanei
+    foreach ($filtered_hotels as $hotel) {
+        if ($hotel["vote"] >= $selected_vote) {
+            $tmp_hotels[] = $hotel;
+        }
+    }
+    $filtered_hotels = $tmp_hotels;
+};
+
+
 ?>
 
 <!DOCTYPE html>
@@ -70,6 +105,37 @@ $hotels = [
 
     <div class="container">
         <h1 class="mt-4 mb-4">Lista degli Hotel</h1>
+
+        <!-- FORM -->
+        <form action="index.php" method="GET" class="mb-4">
+            <div class="form-row">
+                <div>
+                    <label for="parking">Parcheggio</label>
+                    <select name="parking" id="parking" class="form-control" aria-label="Filtra per il parcheggio">
+                        <option value="">Tutti</option>
+                        <option value="1">Sì</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="vote">Voto</label>
+                    <select name="vote" id="vote" class="form-control" aria-label="Filtra per voto">
+                        <option value="">Tutti</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div class=" pt-2">
+                    <button type="submit" class="btn btn-primary">Filtra</button>
+                </div>
+            </div>
+        </form>
+
+
+        <!-- TABLE -->
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -81,9 +147,10 @@ $hotels = [
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($hotels as $cur_hotel) { ?>
+                <?php foreach ($filtered_hotels as $cur_hotel) { ?>
                     <tr>
-                        <td><?php echo $cur_hotel['name']; ?></td>
+                        <!-- Invece di ?php echo posso scrivere ?= -->
+                        <td><?= $cur_hotel['name']; ?></td>
                         <td><?php echo $cur_hotel['description']; ?></td>
                         <td><?php echo $cur_hotel['parking'] ? 'Sì' : 'No'; ?></td>
                         <td><?php echo $cur_hotel['vote']; ?></td>
